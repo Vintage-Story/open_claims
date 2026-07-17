@@ -1,0 +1,14 @@
+{
+    "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+    "type": "Code",
+    "modid": "openclaims",
+    "name": "OpenClaims",
+    "authors": [
+        "BoboDev"
+    ],
+    "description": "GUI for claims and receive more blocks and areas to claim per hour",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": ""
+    }
+}
