@@ -312,5 +312,6 @@ public partial class ClaimSelectionLayer
         BuildClaimsPanel(mapDlg);
         if (mapDlg.Composers[PanelKey] != null)
             mapDlg.Composers[PanelKey].Enabled = wasEnabled;
+        InvalidateRenderCache();
     }
 }
