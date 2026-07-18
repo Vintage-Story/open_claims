@@ -54,3 +54,4 @@ public class ClaimResponsePacket
     [ProtoMember(1)] public string Message = "";
     [ProtoMember(2)] public bool Success;
 }
+

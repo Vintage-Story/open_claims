@@ -30,6 +30,8 @@ public partial class ClaimSelectionLayer : MapLayer
     public static GuiElementScrollbar? PanelScrollbar;
     private double panelFixedX, panelFixedY;
     private bool claimModeActive;
+    private bool viewClaimsActive;
+
 
     // >= 0 enquanto o usuário está redesenhando um claim existente
     public int ResizingClaimIndex { get; set; } = -1;

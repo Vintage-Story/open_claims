@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace OpenClaims.Client;
@@ -27,7 +31,8 @@ public partial class ClaimSelectionLayer
         var insetBounds = ElementBounds.Fixed(0, 30, PanelW - ScrollW, ListH);
         var clipBounds  = insetBounds.ForkContainingChild(5, 5, 5, 5);
         var rtBounds    = ElementBounds.Fixed(0, 0, clipBounds.fixedWidth - 5, 2000);
-        var btnBounds   = ElementBounds.Fixed(0, 0, PanelW, BtnH).FixedUnder(insetBounds, 8);
+        var btnBounds      = ElementBounds.Fixed(0, 0, PanelW, BtnH).FixedUnder(insetBounds, 8);
+        var viewBtnBounds  = ElementBounds.Fixed(0, 0, PanelW, BtnH).FixedUnder(btnBounds, 4);
 
         // pré-calcula altura necessária para o texto de status
         int statusLines = string.IsNullOrEmpty(LastStatusMessage)
@@ -46,14 +51,15 @@ public partial class ClaimSelectionLayer
             .BeginClip(clipBounds)
             .AddRichtext(BuildClaimsVtml(), CairoFont.WhiteSmallText(), rtBounds, "claimList")
             .EndClip()
-            .AddSmallButton(btnText, OnToggleClaimMode, btnBounds, EnumButtonStyle.Normal, "btnToggle");
+            .AddSmallButton(btnText, OnToggleClaimMode, btnBounds, EnumButtonStyle.Normal, "btnToggle")
+            .AddSmallButton(viewClaimsActive ? Lang.Get("openclaims:btn_hide_claims") : Lang.Get("openclaims:btn_view_claims"), OnViewClaims, viewBtnBounds, EnumButtonStyle.Normal, "btnViewClaims");
 
         if (statusLines > 0)
         {
             var statusFont   = LastStatusSuccess
                 ? CairoFont.WhiteSmallText().WithColor(new double[] { 0.3, 1.0, 0.4, 1.0 })
                 : CairoFont.WhiteSmallText().WithColor(new double[] { 1.0, 0.3, 0.25, 1.0 });
-            var statusBounds = ElementBounds.Fixed(0, 0, PanelW, statusH).FixedUnder(btnBounds, 4);
+            var statusBounds = ElementBounds.Fixed(0, 0, PanelW, statusH).FixedUnder(viewBtnBounds, 4);
             composer.AddStaticText(LastStatusMessage, statusFont, statusBounds);
         }
 
@@ -206,6 +212,71 @@ public partial class ClaimSelectionLayer
         rt.Bounds.fixedY = -value;
         rt.Bounds.CalcWorldBounds();
     }
+
+    private bool OnViewClaims()
+    {
+        viewClaimsActive = !viewClaimsActive;
+
+        if (viewClaimsActive)
+            ApplyClaimHighlights();
+        else
+            ClearClaimHighlights();
+
+        RefreshClaimsPanel();
+        return true;
+    }
+
+    private void ApplyClaimHighlights()
+    {
+        string myUid = capi.World.Player.PlayerUID;
+        var blocks = new List<BlockPos>();
+        var colors = new List<int>();
+
+        // ToRgba(a, r, g, b) stores bytes as [b, g, r, a]; OpenGL reads RGBA, so R and B are swapped.
+        // To get visual color (vR, vG, vB): pass ToRgba(a, vB, vG, vR).
+        int colorOwn       = ColorUtil.ToRgba(100, 100, 255, 100); // verde   (symmetric — vR=vB=100)
+        int colorPermitted = ColorUtil.ToRgba(100,  50, 210, 230); // amarelo (vR=230 vG=210 vB=50)
+        int colorForbidden = ColorUtil.ToRgba(100,  60,  60, 220); // vermelho (vR=220 vG=60 vB=60)
+
+        const int MaxHighlightRadius = 512; // blocos — evita tesselar claims distantes
+        var pp = capi.World.Player.Entity.Pos.AsBlockPos;
+
+        foreach (var claim in capi.World.Claims.All.Where(c =>
+            !string.IsNullOrEmpty(c.OwnedByPlayerUid) &&
+            c.Areas.Any(a =>
+            {
+                var ctr = a.Center;
+                return Math.Abs(ctr.X - pp.X) + Math.Abs(ctr.Z - pp.Z) <= MaxHighlightRadius;
+            })))
+        {
+            int color;
+            if (claim.OwnedByPlayerUid == myUid)
+            {
+                color = colorOwn;
+            }
+            else
+            {
+                var access = claim.TestPlayerAccess(capi.World.Player, EnumBlockAccessFlags.Use);
+                bool hasAccess = access != EnumPlayerAccessResult.Denied
+                              || claim.AllowUseEveryone
+                              || claim.AllowTraverseEveryone;
+                color = hasAccess ? colorPermitted : colorForbidden;
+            }
+
+            foreach (var area in claim.Areas)
+            {
+                blocks.Add(area.Start.ToBlockPos());
+                blocks.Add(area.End.ToBlockPos());
+                colors.Add(color);
+            }
+        }
+
+        capi.World.HighlightBlocks(capi.World.Player, 4, blocks, colors,
+            EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cubes);
+    }
+
+    private void ClearClaimHighlights() =>
+        capi.World.HighlightBlocks(capi.World.Player, 4, new List<BlockPos>(), new List<int>());
 
     private bool OnToggleClaimMode()
     {

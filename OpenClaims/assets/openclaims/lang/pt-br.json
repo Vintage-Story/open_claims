@@ -5,6 +5,8 @@
     "openclaims:panel_title": "Claims",
     "openclaims:btn_enable": "Ativar seleção",
     "openclaims:btn_disable": "Desativar seleção",
+    "openclaims:btn_view_claims": "Ver Claims",
+    "openclaims:btn_hide_claims": "Ocultar Claims",
     "openclaims:no_claims": "Nenhum claim ainda.\n\nSegure e arraste no mapa\npara selecionar uma área.",
     "openclaims:claim_label": "Claim {0}",
     "openclaims:claim_size": "{0}x{1} blocos",

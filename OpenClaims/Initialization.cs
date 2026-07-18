@@ -76,6 +76,7 @@ public class Initialization : ModSystem
         selLayer.OnAllowPlayer        = OnAllowPlayer;
         selLayer.OnUnallowPlayer      = OnUnallowPlayer;
         selLayer.OnDeleteClaim        = OnDeleteClaim;
+
     }
 
     private void OnClaimResponse(ClaimResponsePacket p)
@@ -85,6 +86,7 @@ public class Initialization : ModSystem
         selLayer.LastStatusSuccess = p.Success;
         selLayer.RefreshClaimsPanel();
     }
+
 
     private void OnSelectionConfirmed(Vec2i start, Vec2i end)
     {
