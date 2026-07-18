@@ -218,6 +218,11 @@ public class Instance
             ?.Invoke(claims, new object?[] { claims.All, null });
     }
 
+    private static long ClaimVolume(LandClaim c) =>
+        c.Areas.Sum(a => (long)a.SizeX * a.SizeY * a.SizeZ);
+
+    private static long AreaVolume(Cuboidi a) => (long)a.SizeX * a.SizeY * a.SizeZ;
+
     private bool ValidateNewArea(IServerPlayer player, Cuboidi area,
         List<LandClaim> playerClaims, List<LandClaim> allClaims, int skipClaimIndex)
     {
@@ -234,15 +239,16 @@ public class Instance
             ReplyToPanel(player, Lang.Get("openclaims:err_too_small", area.SizeX, area.SizeZ, minSize.X, minSize.Z), success: false); return false;
         }
 
-        int usedVol = playerClaims
+        long usedVol = playerClaims
             .Where((_, i) => i != skipClaimIndex)
-            .Sum(c => c.SizeXYZ);
-        int maxAllowance = player.Role.LandClaimAllowance + player.ServerData.ExtraLandClaimAllowance;
-        if (usedVol + area.SizeXYZ > maxAllowance)
+            .Sum(ClaimVolume);
+        long maxAllowance = (long)player.Role.LandClaimAllowance + player.ServerData.ExtraLandClaimAllowance;
+        long newVol = AreaVolume(area);
+        if (usedVol + newVol > maxAllowance)
         {
             int mapH = api.World.BlockAccessor.MapSizeY;
             ReplyToPanel(player, Lang.Get("openclaims:err_allowance",
-                area.SizeXYZ / mapH,
+                newVol / mapH,
                 (maxAllowance - usedVol) / mapH,
                 maxAllowance / mapH), success: false); return false;
         }
@@ -304,13 +310,16 @@ public class Instance
         if (Configuration.MaxExtraAreas > 0)
             extraAreas = Math.Min(extraAreas, Configuration.MaxExtraAreas);
 
-        int extraSurface = (int)(totalHours * Configuration.SurfaceBlocksPerHour);
+        long extraSurface = (long)(totalHours * Configuration.SurfaceBlocksPerHour);
         if (Configuration.MaxExtraSurface > 0)
             extraSurface = Math.Min(extraSurface, Configuration.MaxExtraSurface);
 
         int mapSizeY = api.World.BlockAccessor.MapSizeY;
+        long extraAllowance = extraSurface * mapSizeY;
+
         player.ServerData.ExtraLandClaimAreas = extraAreas;
-        player.ServerData.ExtraLandClaimAllowance = extraSurface * mapSizeY;
+        // ExtraLandClaimAllowance is int in VS API — clamp to avoid overflow
+        player.ServerData.ExtraLandClaimAllowance = (int)Math.Min(extraAllowance, int.MaxValue);
     }
 
     internal long GetTotalPlaySeconds(IServerPlayer player)
