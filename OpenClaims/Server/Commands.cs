@@ -1,10 +1,11 @@
+using System.Globalization;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 
 namespace OpenClaims.Server;
 
-class Commands
+sealed class Commands
 {
     private readonly Instance instance;
 
@@ -51,7 +52,7 @@ class Commands
         int totalSurface = baseSurface + extraSurface;
 
         return TextCommandResult.Success(Lang.Get("openclaims:claimtime_output",
-            hours.ToString("F2"), maxAreas, player.Role.LandClaimMaxAreas, extraAreas,
+            hours.ToString("F2", CultureInfo.InvariantCulture), maxAreas, player.Role.LandClaimMaxAreas, extraAreas,
             totalSurface, baseSurface, extraSurface));
     }
 }

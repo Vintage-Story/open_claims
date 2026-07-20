@@ -194,7 +194,7 @@ public class Instance
         ReplyToPanel(player, Lang.Get("openclaims:delete_success"), success: true);
     }
 
-    private void UpdateClaimKeepOrder(LandClaim old, LandClaim updated)
+    private static void UpdateClaimKeepOrder(LandClaim old, LandClaim updated)
     {
         var claims = api.World.Claims;
         var all = claims.All;
@@ -225,7 +225,7 @@ public class Instance
 
     private static long AreaVolume(Cuboidi a) => (long)a.SizeX * a.SizeY * a.SizeZ;
 
-    private bool ValidateNewArea(IServerPlayer player, Cuboidi area,
+    private static bool ValidateNewArea(IServerPlayer player, Cuboidi area,
         List<LandClaim> playerClaims, List<LandClaim> allClaims, int skipClaimIndex)
     {
         int maxAreas = player.Role.LandClaimMaxAreas + player.ServerData.ExtraLandClaimAreas;

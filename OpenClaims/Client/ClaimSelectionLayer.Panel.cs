@@ -12,6 +12,9 @@ namespace OpenClaims.Client;
 
 public partial class ClaimSelectionLayer
 {
+    private static readonly double[] ColorSuccess = [0.3, 1.0, 0.4, 1.0];
+    private static readonly double[] ColorError   = [1.0, 0.3, 0.25, 1.0];
+
     private void BuildClaimsPanel(GuiDialogWorldMap dlg)
     {
         const double PanelW  = 270.0;
@@ -57,8 +60,8 @@ public partial class ClaimSelectionLayer
         if (statusLines > 0)
         {
             var statusFont   = LastStatusSuccess
-                ? CairoFont.WhiteSmallText().WithColor(new double[] { 0.3, 1.0, 0.4, 1.0 })
-                : CairoFont.WhiteSmallText().WithColor(new double[] { 1.0, 0.3, 0.25, 1.0 });
+                ? CairoFont.WhiteSmallText().WithColor(ColorSuccess)
+                : CairoFont.WhiteSmallText().WithColor(ColorError);
             var statusBounds = ElementBounds.Fixed(0, 0, PanelW, statusH).FixedUnder(viewBtnBounds, 4);
             composer.AddStaticText(LastStatusMessage, statusFont, statusBounds);
         }
@@ -123,7 +126,7 @@ public partial class ClaimSelectionLayer
                 var spawn = capi.World.DefaultSpawnPosition;
                 int cx = (area.MinX + area.MaxX) / 2 - (int)spawn.X;
                 int cz = (area.MinZ + area.MaxZ) / 2 - (int)spawn.Z;
-                sb.AppendLine($"X: {cx}, Z: {cz}");
+                sb.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"X: {cx}, Z: {cz}");
                 sb.Append(Lang.Get("openclaims:claim_size", sX, sZ));
             }
         }

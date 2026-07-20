@@ -47,7 +47,7 @@ public partial class ClaimSelectionLayer
 
     public (Vec2i? start, Vec2i? end) GetSelection() => (selStart, selEnd);
 
-    private Vec2i MouseToBlock(MouseEvent args, GuiElementMap mapElem)
+    private static Vec2i MouseToBlock(MouseEvent args, GuiElementMap mapElem)
     {
         double viewW = mapElem.Bounds.InnerWidth;
         double viewH = mapElem.Bounds.InnerHeight;

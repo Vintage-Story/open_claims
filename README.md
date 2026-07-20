@@ -7,3 +7,5 @@ GUI for claims and receive more blocks and areas to claim per hour
 - Title for the claimed region
 - Allow and unallow using the Map
 - List of claims in the map
+- Forces the full height claim
+- Claim expiration after a configurable time

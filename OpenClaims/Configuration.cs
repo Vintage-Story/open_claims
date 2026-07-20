@@ -10,8 +10,10 @@ public static class Configuration
     public static int MaxExtraAreas        = 10;
     public static int SurfaceBlocksPerHour = 400;
     public static int MaxExtraSurface      = 20_000;
-    public static bool ClaimExpirationEnabled = false;
+    public static bool ClaimExpirationEnabled;
     public static int  ClaimExpirationDays    = 30;
+
+    private static readonly JsonSerializerOptions IndentedOptions = new() { WriteIndented = true };
 
     private const string ConfigDir  = "ModConfig/OpenClaims";
     private const string ConfigFile = "base.json";
@@ -30,12 +32,12 @@ public static class Configuration
         {
             Directory.CreateDirectory(dirPath);
             cfg = new ConfigData();
-            File.WriteAllText(filePath, JsonSerializer.Serialize(cfg, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(filePath, JsonSerializer.Serialize(cfg, IndentedOptions));
         }
         catch (FileNotFoundException)
         {
             cfg = new ConfigData();
-            File.WriteAllText(filePath, JsonSerializer.Serialize(cfg, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(filePath, JsonSerializer.Serialize(cfg, IndentedOptions));
         }
 
         HoursPerExtraArea       = cfg.HoursPerExtraArea;
@@ -46,13 +48,13 @@ public static class Configuration
         ClaimExpirationDays     = cfg.ClaimExpirationDays;
     }
 
-    private class ConfigData
+    private sealed class ConfigData
     {
         public float HoursPerExtraArea      { get; set; } = 5f;
         public int   MaxExtraAreas          { get; set; } = 10;
         public int   SurfaceBlocksPerHour   { get; set; } = 400;
         public int   MaxExtraSurface        { get; set; } = 20_000;
-        public bool  ClaimExpirationEnabled { get; set; } = false;
+        public bool  ClaimExpirationEnabled { get; set; }
         public int   ClaimExpirationDays    { get; set; } = 30;
     }
 }

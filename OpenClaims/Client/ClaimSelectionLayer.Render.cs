@@ -18,7 +18,7 @@ public partial class ClaimSelectionLayer
     }
 
     private volatile List<ClaimRenderEntry> renderCache = new();
-    private volatile bool rebuildPending = false;
+    private volatile bool rebuildPending;
     private int cachedClaimCount = -1;
     private int cachedResizingIndex = -2;
 
