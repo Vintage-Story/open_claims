@@ -55,6 +55,6 @@ public static class Configuration
         public int   SurfaceBlocksPerHour   { get; set; } = 400;
         public int   MaxExtraSurface        { get; set; } = 20_000;
         public bool  ClaimExpirationEnabled { get; set; }
-        public int   ClaimExpirationDays    { get; set; } = 30;
+        public int   ClaimExpirationDays    { get; set; } = 60;
     }
 }

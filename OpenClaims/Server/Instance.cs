@@ -9,7 +9,6 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 
 namespace OpenClaims.Server;
 
@@ -309,7 +308,7 @@ public class Instance
 
     internal void RunExpirationCheck()
     {
-        if (!Configuration.ClaimExpirationEnabled || Configuration.ClaimExpirationDays <= 0) return;
+        if (!Configuration.ClaimExpirationEnabled) return;
 
         long thresholdTicks = (long)Configuration.ClaimExpirationDays * TimeSpan.TicksPerDay;
         long nowTicks = DateTime.UtcNow.Ticks;
@@ -334,7 +333,7 @@ public class Instance
             foreach (var claim in claims)
                 api.World.Claims.Remove(claim);
 
-            api.Logger.Notification(Lang.Get("openclaims:expiration_log", playerName, claims.Count));
+            Debug.Log($"Removed {claims.Count} claim(s) from player \"{playerName}\" (offline too long).");
         }
     }
 
