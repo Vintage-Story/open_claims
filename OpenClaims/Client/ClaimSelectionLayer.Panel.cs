@@ -19,7 +19,7 @@ public partial class ClaimSelectionLayer
         const double ListH   = 175.0;
         const double BtnH    = 25.0;
         const double LineH   = 18.0;
-        const double CharW   = 7.0; // largura média aproximada por char em WhiteSmallText
+        const double CharW   = 7.0; // approximate average char width in WhiteSmallText
 
         var dialogBounds = ElementStdBounds.AutosizedMainDialog
             .WithFixedPosition(panelFixedX, panelFixedY)
@@ -34,7 +34,7 @@ public partial class ClaimSelectionLayer
         var btnBounds      = ElementBounds.Fixed(0, 0, PanelW, BtnH).FixedUnder(insetBounds, 8);
         var viewBtnBounds  = ElementBounds.Fixed(0, 0, PanelW, BtnH).FixedUnder(btnBounds, 4);
 
-        // pré-calcula altura necessária para o texto de status
+        // pre-compute height required for the status text
         int statusLines = string.IsNullOrEmpty(LastStatusMessage)
             ? 0
             : Math.Max(1, (int)Math.Ceiling(LastStatusMessage.Length * CharW / (PanelW - 10))) + 1;

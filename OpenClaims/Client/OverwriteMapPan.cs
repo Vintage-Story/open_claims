@@ -5,8 +5,7 @@ using Vintagestory.GameContent;
 
 namespace OpenClaims.Client;
 
-// Bloqueia pan por botão esquerdo do GuiElementMap para que o drag esquerdo
-// sempre inicie uma seleção de claim. Notifica o ClaimSelectionLayer para iniciar o drag.
+// Blocks left-button pan on GuiElementMap so that a left drag always starts a claim selection.
 [HarmonyPatch(typeof(GuiElementMap))]
 public static class OverwriteMapPan
 {
@@ -20,17 +19,16 @@ public static class OverwriteMapPan
         if (ClaimModeActive && args.Button == EnumMouseButton.Left)
         {
             ActiveLayer?.StartDrag(args, __instance);
-            return false; // pula método original → IsDragingMap nunca vira true
+            return false; // skip original method so IsDragingMap never becomes true
         }
 
         return true;
     }
 }
 
-// GuiElementScrollbar.OnMouseWheel não checa posição do mouse — age no segundo
-// passo do GuiComposer (todos os elementos) mesmo com o mouse sobre o mapa.
-// Este patch restringe o nosso scrollbar específico a só responder quando o
-// mouse está dentro dos bounds do painel de claims.
+// GuiElementScrollbar.OnMouseWheel does not check the mouse position — it fires for all
+// elements even when the mouse is over the map. This patch restricts our scrollbar to
+// only respond when the mouse is inside the claims panel bounds.
 [HarmonyPatch(typeof(GuiElementScrollbar), "OnMouseWheel")]
 public static class OverwriteClaimsScrollbarWheel
 {

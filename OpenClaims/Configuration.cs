@@ -10,6 +10,8 @@ public static class Configuration
     public static int MaxExtraAreas        = 10;
     public static int SurfaceBlocksPerHour = 400;
     public static int MaxExtraSurface      = 20_000;
+    public static bool ClaimExpirationEnabled = false;
+    public static int  ClaimExpirationDays    = 30;
 
     private const string ConfigDir  = "ModConfig/OpenClaims";
     private const string ConfigFile = "base.json";
@@ -36,17 +38,21 @@ public static class Configuration
             File.WriteAllText(filePath, JsonSerializer.Serialize(cfg, new JsonSerializerOptions { WriteIndented = true }));
         }
 
-        HoursPerExtraArea    = cfg.HoursPerExtraArea;
-        MaxExtraAreas        = cfg.MaxExtraAreas;
-        SurfaceBlocksPerHour = cfg.SurfaceBlocksPerHour;
-        MaxExtraSurface      = cfg.MaxExtraSurface;
+        HoursPerExtraArea       = cfg.HoursPerExtraArea;
+        MaxExtraAreas           = cfg.MaxExtraAreas;
+        SurfaceBlocksPerHour    = cfg.SurfaceBlocksPerHour;
+        MaxExtraSurface         = cfg.MaxExtraSurface;
+        ClaimExpirationEnabled  = cfg.ClaimExpirationEnabled;
+        ClaimExpirationDays     = cfg.ClaimExpirationDays;
     }
 
     private class ConfigData
     {
-        public float HoursPerExtraArea  { get; set; } = 5f;
-        public int MaxExtraAreas         { get; set; } = 10;
-        public int SurfaceBlocksPerHour  { get; set; } = 400;
-        public int MaxExtraSurface       { get; set; } = 20_000;
+        public float HoursPerExtraArea      { get; set; } = 5f;
+        public int   MaxExtraAreas          { get; set; } = 10;
+        public int   SurfaceBlocksPerHour   { get; set; } = 400;
+        public int   MaxExtraSurface        { get; set; } = 20_000;
+        public bool  ClaimExpirationEnabled { get; set; } = false;
+        public int   ClaimExpirationDays    { get; set; } = 30;
     }
 }

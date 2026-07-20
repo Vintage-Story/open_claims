@@ -33,7 +33,7 @@ public partial class ClaimSelectionLayer : MapLayer
     private bool viewClaimsActive;
 
 
-    // >= 0 enquanto o usuário está redesenhando um claim existente
+    // >= 0 while the user is resizing an existing claim
     public int ResizingClaimIndex { get; set; } = -1;
 
     public Action<int>? OnDeleteClaim;

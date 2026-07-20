@@ -20,6 +20,7 @@ public class Instance
 
     private readonly Dictionary<string, long> sessionStartTicks = new();
     private Dictionary<string, long> totalPlaySeconds = new();
+    private Dictionary<string, long> lastOnlineTicks  = new();
     private readonly Commands commands;
 
     internal Instance()
@@ -54,6 +55,7 @@ public class Instance
         api.Event.PlayerNowPlaying += OnPlayerJoin;
         api.Event.PlayerLeave += OnPlayerLeave;
         api.Event.RegisterGameTickListener(_ => OnProgressionTick(), 300_000);
+        api.Event.RegisterGameTickListener(_ => RunExpirationCheck(), 3_600_000);
         api.Event.SaveGameLoaded += OnSaveLoaded;
         api.Event.GameWorldSave += OnWorldSave;
 
@@ -269,11 +271,14 @@ public class Instance
     internal static void ReplyToPanel(IServerPlayer player, string msg, bool success) =>
         serverChannel.SendPacket(new ClaimResponsePacket { Message = msg, Success = success }, player);
 
-    // ── Progressão por tempo de jogo ──────────────────────────────────────────
+    // ── Playtime progression ──────────────────────────────────────────────────
 
     internal void OnPlayerJoin(IServerPlayer player)
     {
         sessionStartTicks[player.PlayerUID] = DateTime.UtcNow.Ticks;
+        lastOnlineTicks[player.PlayerUID] = DateTime.UtcNow.Ticks;
+        string onlineJson = JsonSerializer.Serialize(lastOnlineTicks);
+        api.WorldManager.SaveGame.StoreData("openclaims_lastonline", Encoding.UTF8.GetBytes(onlineJson));
         ApplyProgression(player);
     }
 
@@ -281,6 +286,7 @@ public class Instance
     {
         FlushSession(player);
         sessionStartTicks.Remove(player.PlayerUID);
+        lastOnlineTicks[player.PlayerUID] = DateTime.UtcNow.Ticks;
     }
 
     internal void FlushSession(IServerPlayer player)
@@ -298,6 +304,37 @@ public class Instance
         {
             FlushSession(player);
             ApplyProgression(player);
+        }
+    }
+
+    internal void RunExpirationCheck()
+    {
+        if (!Configuration.ClaimExpirationEnabled || Configuration.ClaimExpirationDays <= 0) return;
+
+        long thresholdTicks = (long)Configuration.ClaimExpirationDays * TimeSpan.TicksPerDay;
+        long nowTicks = DateTime.UtcNow.Ticks;
+
+        var onlineUids = api.World.AllOnlinePlayers.Select(p => p.PlayerUID).ToHashSet();
+
+        var expired = lastOnlineTicks
+            .Where(kv => !onlineUids.Contains(kv.Key) && nowTicks - kv.Value >= thresholdTicks)
+            .Select(kv => kv.Key)
+            .ToList();
+
+        foreach (string uid in expired)
+        {
+            var claims = api.World.Claims.All
+                .Where(c => c.OwnedByPlayerUid == uid).ToList();
+
+            lastOnlineTicks.Remove(uid);
+
+            if (claims.Count == 0) continue;
+
+            string playerName = claims[0].LastKnownOwnerName ?? uid;
+            foreach (var claim in claims)
+                api.World.Claims.Remove(claim);
+
+            api.Logger.Notification(Lang.Get("openclaims:expiration_log", playerName, claims.Count));
         }
     }
 
@@ -355,22 +392,32 @@ public class Instance
         }
     }
 
-    // ── Persistência ──────────────────────────────────────────────────────────
+    // ── Persistence ───────────────────────────────────────────────────────────
 
     private void OnSaveLoaded()
     {
         byte[]? bytes = api.WorldManager.SaveGame.GetData("openclaims_playtime");
         if (bytes != null)
             totalPlaySeconds = JsonSerializer.Deserialize<Dictionary<string, long>>(Encoding.UTF8.GetString(bytes)) ?? new();
+
+        byte[]? onlineBytes = api.WorldManager.SaveGame.GetData("openclaims_lastonline");
+        if (onlineBytes != null)
+            lastOnlineTicks = JsonSerializer.Deserialize<Dictionary<string, long>>(Encoding.UTF8.GetString(onlineBytes)) ?? new();
     }
 
     private void OnWorldSave()
     {
         if (api == null) return;
+        long nowTicks = DateTime.UtcNow.Ticks;
         foreach (IServerPlayer player in api.World.AllOnlinePlayers.Cast<IServerPlayer>())
+        {
             FlushSession(player);
+            lastOnlineTicks[player.PlayerUID] = nowTicks;
+        }
         string json = JsonSerializer.Serialize(totalPlaySeconds);
         api.WorldManager.SaveGame.StoreData("openclaims_playtime", Encoding.UTF8.GetBytes(json));
+        string onlineJson = JsonSerializer.Serialize(lastOnlineTicks);
+        api.WorldManager.SaveGame.StoreData("openclaims_lastonline", Encoding.UTF8.GetBytes(onlineJson));
     }
 
     internal void Dispose()

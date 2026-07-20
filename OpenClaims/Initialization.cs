@@ -132,7 +132,7 @@ public class Initialization : ModSystem
         var (start, end) = selLayer.GetSelection();
         if (start == null || end == null)
         {
-            capi?.ShowChatMessage("[OpenClaims] Nenhuma área selecionada no mapa.");
+            capi?.ShowChatMessage("[OpenClaims] No area selected on the map.");
             return;
         }
         OnSelectionConfirmed(start, end);

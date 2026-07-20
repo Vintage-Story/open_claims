@@ -16,9 +16,20 @@ class Commands
     internal void Init()
     {
         Instance.api.ChatCommands.Create("claimtime")
-            .WithDescription("Mostra seu tempo jogado e progressão de claims")
+            .WithDescription("Shows your playtime and claim progression")
             .RequiresPrivilege(Privilege.chat)
             .HandleWith(OnClaimTimeCommand);
+
+        Instance.api.ChatCommands.Create("claimexpire")
+            .WithDescription("Forces an immediate check for expired claims")
+            .RequiresPrivilege(Privilege.root)
+            .HandleWith(OnClaimExpireCommand);
+    }
+
+    private TextCommandResult OnClaimExpireCommand(TextCommandCallingArgs args)
+    {
+        instance.RunExpirationCheck();
+        return TextCommandResult.Success(Lang.Get("openclaims:claimexpire_done"));
     }
 
     private TextCommandResult OnClaimTimeCommand(TextCommandCallingArgs args)

@@ -39,5 +39,7 @@
     "openclaims:btn_confirm": "Confirm",
     "openclaims:btn_cancel": "Cancel",
     "openclaims:claimtime_player_only": "Only players can use this command.",
-    "openclaims:claimtime_output": "Time played: {0}h\nMax areas: {1} (base {2} + {3} extra)\nTotal surface: {4}m² (base {5}m² + {6}m² extra)"
+    "openclaims:claimtime_output": "Time played: {0}h\nMax areas: {1} (base {2} + {3} extra)\nTotal surface: {4}m² (base {5}m² + {6}m² extra)",
+    "openclaims:expiration_log": "OpenClaims: removed {1} claim(s) from player \"{0}\" (offline too long).",
+    "openclaims:claimexpire_done": "Expiration check completed."
 }

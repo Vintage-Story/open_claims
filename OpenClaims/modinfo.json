@@ -7,7 +7,7 @@
         "BoboDev"
     ],
     "description": "GUI for claims and receive more blocks and areas to claim per hour",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "dependencies": {
         "game": ""
     }
