@@ -19,6 +19,7 @@
     "openclaims:err_too_small": "Não foi possível claimar: área tem {0}x{1} blocos, mínimo é {2}x{3}.",
     "openclaims:err_allowance": "Não foi possível claimar: esta área tem {0}m², mas você só tem {1}m² disponíveis (limite: {2}m²).",
     "openclaims:err_overlap": "Não foi possível claimar: área sobrepõe um claim de {0}.",
+    "openclaims:err_too_close": "Não foi possível claimar: área está muito perto de um claim de {0}, distância mínima é {1} blocos.",
     "openclaims:link_rename": "Renomear",
     "openclaims:link_resize": "Redimensionar",
     "openclaims:link_cancel_resize": "Cancelar Resize",

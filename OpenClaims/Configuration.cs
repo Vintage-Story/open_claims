@@ -112,6 +112,8 @@ public static class Configuration
 
         ["ClaimExpirationEnabled"] = ClaimExpirationEnabled,
         ["ClaimExpirationDays"] = (long)ClaimExpirationDays,
+
+        ["MinDistanceBetweenPlayersClaims"] = (long)MinDistanceBetweenPlayersClaims,
     };
 
     #region baseconfigs
@@ -124,6 +126,13 @@ public static class Configuration
     #region Claim Expiration
     public static bool ClaimExpirationEnabled = false;
     public static int ClaimExpirationDays = 60;
+    #endregion
+    #region Claim Placement
+    /// <summary>
+    /// Minimum distance, in blocks, required between a new/resized claim area and any
+    /// claim area owned by another player. Set to 0 to disable this restriction.
+    /// </summary>
+    public static int MinDistanceBetweenPlayersClaims = 0;
     #endregion
 
     private const string ConfigDir = "ModConfig/OpenClaims";
@@ -177,6 +186,13 @@ public static class Configuration
                 else if (value is not long) Debug.LogError($"CONFIGURATION ERROR: ClaimExpirationDays is not int is {value.GetType()}");
                 else ClaimExpirationDays = (int)(long)value;
             else Debug.LogError("CONFIGURATION ERROR: ClaimExpirationDays not set");
+        }
+        { //MinDistanceBetweenPlayersClaims
+            if (baseConfigs.TryGetValue("MinDistanceBetweenPlayersClaims", out object? value))
+                if (value is null) Debug.LogError("CONFIGURATION ERROR: MinDistanceBetweenPlayersClaims is null");
+                else if (value is not long) Debug.LogError($"CONFIGURATION ERROR: MinDistanceBetweenPlayersClaims is not int is {value.GetType()}");
+                else MinDistanceBetweenPlayersClaims = (int)(long)value;
+            else Debug.LogError("CONFIGURATION ERROR: MinDistanceBetweenPlayersClaims not set");
         }
     }
     #endregion

@@ -264,6 +264,23 @@ public class Instance
             }
         }
 
+        if (Configuration.MinDistanceBetweenPlayersClaims > 0)
+        {
+            for (int i = 0; i < allClaims.Count; i++)
+            {
+                if (allClaims[i] == skipClaim) continue;
+                if (allClaims[i].OwnedByPlayerUid == player.PlayerUID) continue;
+
+                foreach (var otherArea in allClaims[i].Areas)
+                {
+                    if (otherArea.ShortestDistanceFrom(area) < Configuration.MinDistanceBetweenPlayersClaims)
+                    {
+                        ReplyToPanel(player, Lang.Get("openclaims:err_too_close", allClaims[i].LastKnownOwnerName, Configuration.MinDistanceBetweenPlayersClaims), success: false); return false;
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
