@@ -15,7 +15,7 @@ public partial class ClaimSelectionLayer
     private static readonly double[] ColorSuccess = [0.3, 1.0, 0.4, 1.0];
     private static readonly double[] ColorError   = [1.0, 0.3, 0.25, 1.0];
 
-    private void BuildClaimsPanel(GuiDialogWorldMap dlg)
+    private void BuildClaimsPanel()
     {
         const double PanelW  = 270.0;
         const double ScrollW = 20.0;
@@ -47,7 +47,7 @@ public partial class ClaimSelectionLayer
 
         var composer = capi.Gui.CreateCompo(PanelKey, dialogBounds)
             .AddShadedDialogBG(bgBounds, false)
-            .AddDialogTitleBar(Lang.Get("openclaims:panel_title"), () => dlg.Composers[PanelKey].Enabled = false)
+            .AddDialogTitleBar(Lang.Get("openclaims:panel_title"), () => { if (mapDlg?.Composers[PanelKey] != null) mapDlg.Composers[PanelKey].Enabled = false; })
             .BeginChildElements(bgBounds)
             .AddInset(insetBounds)
             .AddVerticalScrollbar(OnClaimScrollbarChanged, ElementStdBounds.VerticalScrollbar(insetBounds), "claimScrollbar")
@@ -66,15 +66,14 @@ public partial class ClaimSelectionLayer
             composer.AddStaticText(LastStatusMessage, statusFont, statusBounds);
         }
 
-        dlg.Composers[PanelKey] = composer.EndChildElements().Compose();
-
-        dlg.Composers[PanelKey].Enabled = false;
-        PanelComposer = dlg.Composers[PanelKey];
+        mapDlg!.Composers[PanelKey] = composer.EndChildElements().Compose();
+        mapDlg.Composers[PanelKey].Enabled = false;
+        PanelComposer = mapDlg.Composers[PanelKey];
 
         double visH = clipBounds.fixedHeight;
         capi.Event.EnqueueMainThreadTask(() =>
         {
-            var compo = dlg.Composers[PanelKey];
+            var compo = mapDlg?.Composers[PanelKey];
             if (compo == null) return;
             var rt = compo.GetRichtext("claimList");
             var sb = compo.GetScrollbar("claimScrollbar");
@@ -209,8 +208,7 @@ public partial class ClaimSelectionLayer
 
     private void OnClaimScrollbarChanged(float value)
     {
-        if (mapDlg == null) return;
-        var rt = mapDlg.Composers[PanelKey]?.GetRichtext("claimList");
+        var rt = mapDlg?.Composers[PanelKey]?.GetRichtext("claimList");
         if (rt == null) return;
         rt.Bounds.fixedY = -value;
         rt.Bounds.CalcWorldBounds();
@@ -312,7 +310,7 @@ public partial class ClaimSelectionLayer
     {
         if (mapDlg == null) return;
         bool wasEnabled = mapDlg.Composers[PanelKey]?.Enabled ?? false;
-        BuildClaimsPanel(mapDlg);
+        BuildClaimsPanel();
         if (mapDlg.Composers[PanelKey] != null)
             mapDlg.Composers[PanelKey].Enabled = wasEnabled;
         InvalidateRenderCache();

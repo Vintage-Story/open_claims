@@ -60,7 +60,13 @@ public partial class ClaimSelectionLayer : MapLayer
     {
         mapDlg = dlg;
 
-        panelFixedX = (compo.Bounds.renderX + compo.Bounds.OuterWidth) / RuntimeEnv.GUIScale + 10.0;
+        const double PanelW = 270.0;
+        double screenW = capi.Render.FrameWidth / RuntimeEnv.GUIScale;
+        double idealX  = (compo.Bounds.renderX + compo.Bounds.OuterWidth) / RuntimeEnv.GUIScale + 10.0;
+
+        panelFixedX = (idealX + PanelW <= screenW)
+            ? idealX
+            : (compo.Bounds.renderX + compo.Bounds.OuterWidth) / RuntimeEnv.GUIScale - PanelW - 10.0;
 
         double baseY = compo.Bounds.renderY / RuntimeEnv.GUIScale;
         var prospComp = dlg.Composers["worldmap-layer-prospecting"];
@@ -69,7 +75,7 @@ public partial class ClaimSelectionLayer : MapLayer
         else
             panelFixedY = baseY;
 
-        BuildClaimsPanel(dlg);
+        BuildClaimsPanel();
     }
 
     public override void OnMapOpenedClient()
@@ -79,6 +85,17 @@ public partial class ClaimSelectionLayer : MapLayer
 
         OverwriteMapPan.ClaimModeActive = claimModeActive;
         OverwriteMapPan.ActiveLayer = claimModeActive ? this : null;
+
+        // ComposeDialogExtras inserts the panel BEFORE "single" in the Composers dictionary,
+        // so it renders behind the map. Re-inserting here (after "single" is set) fixes the order.
+        if (mapDlg != null)
+        {
+            bool wasEnabled = mapDlg.Composers[PanelKey]?.Enabled ?? false;
+            mapDlg.Composers.Remove(PanelKey);
+            BuildClaimsPanel();
+            if (mapDlg.Composers[PanelKey] != null)
+                mapDlg.Composers[PanelKey].Enabled = wasEnabled;
+        }
     }
 
     public override void OnMapClosedClient()
