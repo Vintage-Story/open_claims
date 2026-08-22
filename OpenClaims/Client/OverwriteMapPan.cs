@@ -19,8 +19,15 @@ public static class OverwriteMapPan
         if (ClaimModeActive && args.Button == EnumMouseButton.Left)
         {
             ActiveLayer?.StartDrag(args, __instance);
-            return false; // skip original method so IsDragingMap never becomes true
+            return false; // skip original so IsDragingMap never becomes true
         }
+
+        // If the panel is visible and the click lands inside it, don't let the map
+        // consume the event (args.Handled = true) — the dialog loop will then reach
+        // the panel composer and dispatch it correctly.
+        var panel = ClaimSelectionLayer.PanelComposer;
+        if (panel != null && panel.Enabled && panel.Bounds.PointInside(args.X, args.Y))
+            return false;
 
         return true;
     }
