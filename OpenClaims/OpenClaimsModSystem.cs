@@ -2,12 +2,12 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using OpenClaims.Client;
+using OpenConfiguration;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
-using static OpenClaims.Debug;
 
 namespace OpenClaims;
 
@@ -19,18 +19,20 @@ public class Initialization : ModSystem
     private IClientNetworkChannel? clientChannel;
 
     private Server.Instance? serverInstance;
+    private ModLogger logger = ModLogger.None;
 
     public override void Start(ICoreAPI api)
     {
         base.Start(api);
-        Debug.LoadLogger(api.Logger);
-        Log($"Running on Version: {Mod.Info.Version}");
+        logger = new ModLogger(api.Logger, "OpenClaims");
+        logger.Log($"Running on Version: {Mod.Info.Version}");
     }
 
     public override void StartClientSide(ICoreClientAPI api)
     {
         capi = api;
         mapManager = api.ModLoader.GetModSystem<WorldMapManager>();
+        OverwriteMapPan.Logger = logger;
 
         new Harmony("openclaims").PatchAll(Assembly.GetExecutingAssembly());
 
@@ -60,11 +62,9 @@ public class Initialization : ModSystem
 
     public override void StartServerSide(ICoreServerAPI api)
     {
-        serverInstance = new Server.Instance();
+        serverInstance = new Server.Instance(logger);
         serverInstance.Init(api);
     }
-
-    // ── Lado cliente ───────────────────────────────────────────────────────
 
     private void OnLevelFinalize()
     {
@@ -145,20 +145,4 @@ public class Initialization : ModSystem
         serverInstance?.Dispose();
         base.Dispose();
     }
-}
-
-public static class Debug
-{
-    private static ILogger? logger;
-
-    public static void LoadLogger(ILogger _logger) => logger = _logger;
-
-    public static void Log(string message)
-        => logger?.Log(EnumLogType.Notification, $"[OpenClaims] {message}");
-
-    public static void LogWarn(string message)
-        => logger?.Log(EnumLogType.Warning, $"[OpenClaims] {message}");
-
-    public static void LogError(string message)
-        => logger?.Log(EnumLogType.Error, $"[OpenClaims] {message}");
 }

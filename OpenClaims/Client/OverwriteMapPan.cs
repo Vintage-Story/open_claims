@@ -1,4 +1,5 @@
 using HarmonyLib;
+using OpenConfiguration;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
@@ -11,6 +12,7 @@ public static class OverwriteMapPan
 {
     public static bool ClaimModeActive;
     public static ClaimSelectionLayer? ActiveLayer;
+    public static ModLogger Logger = ModLogger.None;
 
     [HarmonyPrefix]
     [HarmonyPatch("OnMouseDownOnElement")]

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using HarmonyLib;
+using OpenConfiguration;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -21,9 +22,11 @@ public class Instance
     private Dictionary<string, long> totalPlaySeconds = new();
     private Dictionary<string, long> lastOnlineTicks  = new();
     private readonly Commands commands;
+    private readonly ModLogger logger;
 
-    internal Instance()
+    internal Instance(ModLogger logger)
     {
+        this.logger = logger;
         commands = new Commands(this);
     }
 
@@ -264,7 +267,7 @@ public class Instance
             }
         }
 
-        if (Configuration.MinDistanceBetweenPlayersClaims > 0)
+        if (Configuration.Claim.MinDistanceBetweenPlayersClaims > 0)
         {
             for (int i = 0; i < allClaims.Count; i++)
             {
@@ -273,9 +276,9 @@ public class Instance
 
                 foreach (var otherArea in allClaims[i].Areas)
                 {
-                    if (otherArea.ShortestDistanceFrom(area) < Configuration.MinDistanceBetweenPlayersClaims)
+                    if (otherArea.ShortestDistanceFrom(area) < Configuration.Claim.MinDistanceBetweenPlayersClaims)
                     {
-                        ReplyToPanel(player, Lang.Get("openclaims:err_too_close", allClaims[i].LastKnownOwnerName, Configuration.MinDistanceBetweenPlayersClaims), success: false); return false;
+                        ReplyToPanel(player, Lang.Get("openclaims:err_too_close", allClaims[i].LastKnownOwnerName, Configuration.Claim.MinDistanceBetweenPlayersClaims), success: false); return false;
                     }
                 }
             }
@@ -325,9 +328,9 @@ public class Instance
 
     internal void RunExpirationCheck()
     {
-        if (!Configuration.ClaimExpirationEnabled) return;
+        if (!Configuration.Expiration.ClaimExpirationEnabled) return;
 
-        long thresholdTicks = (long)Configuration.ClaimExpirationDays * TimeSpan.TicksPerDay;
+        long thresholdTicks = (long)Configuration.Expiration.ClaimExpirationDays * TimeSpan.TicksPerDay;
         long nowTicks = DateTime.UtcNow.Ticks;
 
         var onlineUids = api.World.AllOnlinePlayers.Select(p => p.PlayerUID).ToHashSet();
@@ -350,7 +353,7 @@ public class Instance
             foreach (var claim in claims)
                 api.World.Claims.Remove(claim);
 
-            Debug.Log($"Removed {claims.Count} claim(s) from player \"{playerName}\" (offline too long).");
+            logger.Log($"Removed {claims.Count} claim(s) from player \"{playerName}\" (offline too long).");
         }
     }
 
@@ -359,13 +362,13 @@ public class Instance
         totalPlaySeconds.TryGetValue(player.PlayerUID, out long total);
         double totalHours = total / 3600.0;
 
-        int extraAreas = (int)(totalHours / Configuration.HoursPerExtraArea);
-        if (Configuration.MaxExtraAreas > 0)
-            extraAreas = Math.Min(extraAreas, Configuration.MaxExtraAreas);
+        int extraAreas = (int)(totalHours / Configuration.Progression.HoursPerExtraArea);
+        if (Configuration.Progression.MaxExtraAreas > 0)
+            extraAreas = Math.Min(extraAreas, Configuration.Progression.MaxExtraAreas);
 
-        long extraSurface = (long)(totalHours * Configuration.SurfaceBlocksPerHour);
-        if (Configuration.MaxExtraSurface > 0)
-            extraSurface = Math.Min(extraSurface, Configuration.MaxExtraSurface);
+        long extraSurface = (long)(totalHours * Configuration.Progression.SurfaceBlocksPerHour);
+        if (Configuration.Progression.MaxExtraSurface > 0)
+            extraSurface = Math.Min(extraSurface, Configuration.Progression.MaxExtraSurface);
 
         int mapSizeY = api.World.BlockAccessor.MapSizeY;
         long extraAllowance = extraSurface * mapSizeY;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OpenConfiguration;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -11,6 +12,7 @@ namespace OpenClaims.Client;
 public partial class ClaimSelectionLayer : MapLayer
 {
     private ICoreClientAPI capi;
+    private readonly ModLogger logger;
     private MeshRef? quadModel;
     private MeshRef? lineRectModel;
     private Matrixf mvMat = new Matrixf();
@@ -53,6 +55,7 @@ public partial class ClaimSelectionLayer : MapLayer
     public ClaimSelectionLayer(ICoreAPI api, IWorldMapManager mapSink) : base(api, mapSink)
     {
         capi = (ICoreClientAPI)api;
+        logger = new ModLogger(capi.Logger, "OpenClaims");
         capi.RegisterLinkProtocol("openclaims", OnClaimLinkClicked);
     }
 
